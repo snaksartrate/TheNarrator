@@ -1,0 +1,3 @@
+evaluator_id,model_name,story_id,prompt,grammar,coherence,creativity,continuity,relevance,completeness,average_score,comments
+E01,sample_model,S01,A boy discovers a mysterious forest.,4,4,5,4,5,4,4.33,
+E01,GRU_BPE_MLE,S01,A boy discovers a mysterious forest.,4,4,5,3,5,4,4.17,Interesting story but the ending could be improved.
