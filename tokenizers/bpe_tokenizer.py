@@ -89,20 +89,38 @@ class BPETokenizer(BaseTokenizer):
             self.merges.append(best)
             self._add_token(new_symbol)
 
-            # apply the merge only to the words that contain the pair
-            for idx in list(pair_words[best]):
+            # Apply the merge only to words containing the selected pair.
+            affected_words = list(pair_words[best])
+
+            for idx in affected_words:
                 symbols, freq = words[idx]
-                for pair in zip(symbols, symbols[1:]):
+
+                # Remove the old adjacent-pair contributions.
+                old_pairs = list(zip(symbols, symbols[1:]))
+
+                for pair in old_pairs:
                     pair_counts[pair] -= freq
-                new_symbols = self._merge_pair(symbols, best, new_symbol)
-                for pair in zip(new_symbols, new_symbols[1:]):
+                    pair_words[pair].discard(idx)
+
+                    # Remove pairs that no longer occur anywhere.
+                    if not pair_words[pair]:
+                        pair_words.pop(pair, None)
+                        pair_counts.pop(pair, None)
+
+                # Merge the selected pair.
+                new_symbols = self._merge_pair(
+                    symbols, best, new_symbol
+                )
+
+                # Add the new adjacent-pair contributions.
+                new_pairs = list(zip(new_symbols, new_symbols[1:]))
+
+                for pair in new_pairs:
                     pair_counts[pair] += freq
                     pair_words[pair].add(idx)
+
                 words[idx][0] = new_symbols
-
-            del pair_counts[best]
-            del pair_words[best]
-
+                
     # ------------------------------------------------------------------
     def _bpe_word(self, pretoken):
         """Apply the learned merges to one pre token."""

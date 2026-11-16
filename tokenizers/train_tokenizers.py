@@ -21,6 +21,7 @@ import time
 from pathlib import Path
 
 from . import get_tokenizer
+from src.data.constants import STORY_SEP
 
 DEMO_STORY = (
     "Once upon a time there was a little fox who lived near a quiet river.\n"
@@ -29,7 +30,7 @@ DEMO_STORY = (
     "The turtle smiled slowly. \"Because the river is always telling stories,\" he said.\n"
     "The fox sat down, and together they listened until the sun went down."
 )
-DEMO_TEXT = "<|endoftext|>".join([DEMO_STORY] * 20)
+DEMO_TEXT = STORY_SEP.join([DEMO_STORY] * 20)
 DEMO_VAL = (
     "One evening the fox found a shiny stone by the river.\n"
     "\"What a strange stone,\" the turtle said, \"it must hold a story!\""
@@ -47,8 +48,7 @@ def main():
     p.add_argument("--out", default="tokenizers/saved", help="folder for saved vocab files")
     p.add_argument("--bpe-vocab", type=int, default=4000, help="target BPE vocabulary size")
     p.add_argument("--min-freq", type=int, default=2, help="min word frequency for word tokenizer")
-    p.add_argument("--story-separator", default="<|endoftext|>",
-                   help="marker between stories in the text files (removed before fitting)")
+    p.add_argument("--story-separator", default=STORY_SEP, help="marker between stories in the text files (removed before fitting)")
     p.add_argument("--max-chars", type=int, default=None,
                    help="use only the first N characters of train text (faster BPE)")
     args = p.parse_args()

@@ -1,0 +1,23 @@
+{
+  "experiment_id": "adamw_char",
+  "tokenizer": "char",
+  "optimizer": "AdamW",
+  "checkpoint": "best.pt",
+  "checkpoint_step": 4,
+  "generation_settings": {
+    "max_new_tokens": 30,
+    "temperature": 0.8,
+    "top_k": 40,
+    "greedy": false,
+    "seed": 42
+  },
+  "stories": [
+    {
+      "file": "story_00.txt",
+      "seed": 42,
+      "num_tokens": 30,
+      "seconds": 0.20009790000040084
+    }
+  ],
+  "total_seconds": 0.20009790000040084
+}

@@ -61,8 +61,20 @@ python -m src.data.validate
 from src.data import StoryDataset, load_split
 
 stories = load_split("train")
-token_ids = [token_id for story in stories for token_id in tokenizer.encode(story)]
-train_dataset = StoryDataset(token_ids, block_size=128)
+
+token_ids = []
+
+for story in stories:
+    story_ids = tokenizer.encode(
+        story,
+        add_special_tokens=True
+    )
+    token_ids.extend(story_ids)
+
+train_dataset = StoryDataset(
+    token_ids,
+    block_size=128
+)
 ```
 
 ## Note for tokenizer authors

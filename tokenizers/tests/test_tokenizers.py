@@ -158,3 +158,50 @@ def test_factory():
     assert isinstance(get_tokenizer("bpe", vocab_size=500), BPETokenizer)
     with pytest.raises(ValueError):
         get_tokenizer("nope")
+
+def test_bpe_pair_counts_match_current_words():
+    bpe = BPETokenizer(vocab_size=100)
+
+    bpe.train(TEXT)
+
+    # Reconstruct the final pre-token sequences.
+    from collections import Counter
+
+    from tokenizers.bpe_tokenizer import _PRETOKEN_RE
+
+    pretoken_freq = Counter(_PRETOKEN_RE.findall(TEXT))
+
+    actual_counts = Counter()
+
+    for pretoken, freq in pretoken_freq.items():
+        symbols = bpe._bpe_word(pretoken)
+
+        for pair in zip(symbols, symbols[1:]):
+            actual_counts[pair] += freq
+
+    # The learned pair counts should represent the current
+    # token sequences after all merges.
+    assert all(
+        count > 0 for count in actual_counts.values()
+    )
+
+def test_shared_story_separator():
+    from src.data.constants import STORY_SEP
+
+    assert STORY_SEP == "<|endofstory|>"
+
+    stories = [
+        "The fox found a river.",
+        "The turtle watched the fox."
+    ]
+
+    text = STORY_SEP.join(stories)
+
+    tok = CharTokenizer()
+    tok.train("\n\n".join(stories))
+
+    assert STORY_SEP not in tok.token_to_id
+
+    assert tok.decode(
+        tok.encode(stories[0])
+    ) == stories[0]

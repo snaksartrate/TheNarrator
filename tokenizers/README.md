@@ -69,7 +69,7 @@ python -m pytest tokenizers/tests -v
 ## Notes for the team
 
 * Fit tokenizers on the training split only. Never on validation or test.
-* Strip the story separator (for example <|endoftext|>) before train(), and encode each story with add_special_tokens=True so BOS and EOS mark story boundaries.
+* Strip the shared story separator (`<|endofstory|>`) before train(), and encode each story with `add_special_tokens=True` so BOS and EOS mark story boundaries.
 * Perplexity is per token, so it is not comparable across char, word and BPE.
   Use bits per character or compare within one tokenizer.
 * Only the standard library is used (pytest for tests).
