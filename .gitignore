@@ -1,5 +1,129 @@
-venv/
-dataset/raw/
+
+# ==========================================
+# TheNarrator - Git Ignore
+# ==========================================
+
+
+# ------------------------------------------
+# 1. Python cache and compiled files
+# ------------------------------------------
 __pycache__/
-*.pyc
-dataset/processed/*.txt
+*.py[cod]
+*$py.class
+*.pyd
+
+
+# ------------------------------------------
+# 2. Virtual environments
+# ------------------------------------------
+venv/
+.venv/
+env/
+ENV/
+.conda/
+
+
+# ------------------------------------------
+# 3. Python development tools
+# ------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+htmlcov/
+
+
+# ------------------------------------------
+# 4. Jupyter Notebook
+# ------------------------------------------
+.ipynb_checkpoints/
+
+
+# ------------------------------------------
+# 5. Raw dataset downloads
+# ------------------------------------------
+dataset/raw/*
+!dataset/raw/.gitkeep
+
+
+# ------------------------------------------
+# 6. Generated processed dataset
+# ------------------------------------------
+dataset/processed/train.txt
+dataset/processed/validation.txt
+dataset/processed/test.txt
+
+# Keep dataset statistics and documentation
+# dataset_stats.json should be committed.
+
+
+# ------------------------------------------
+# 7. Trained model checkpoints
+# ------------------------------------------
+models/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+
+# ------------------------------------------
+# 8. Generated tokenizer files
+# ------------------------------------------
+tokenizers/saved/
+tokenizers/__pycache__/
+
+
+# ------------------------------------------
+# 9. Experiment outputs
+# ------------------------------------------
+experiments/outputs/*
+!experiments/outputs/.gitkeep
+
+# Ignore temporary experiment logs
+*.log
+
+
+# ------------------------------------------
+# 10. Temporary files
+# ------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+
+# ------------------------------------------
+# 11. Environment variables and secrets
+# ------------------------------------------
+.env
+.env.*
+!.env.example
+
+
+# ------------------------------------------
+# 12. IDE configuration
+# ------------------------------------------
+.vscode/
+.idea/
+
+
+# ------------------------------------------
+# 13. Operating system files
+# ------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+
+# ------------------------------------------
+# 14. Build and distribution artifacts
+# ------------------------------------------
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/

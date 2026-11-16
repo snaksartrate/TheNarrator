@@ -102,7 +102,8 @@ def write_split(stories, path):
 
 # ---------------------------------------------------------------- statistics
 def _tokens(text):
-    return re.findall(r"\w+|[^\w\s]", text.lower())
+    """Split text into lowercase whitespace-separated words."""
+    return text.lower().split()
 
 
 def compute_stats(splits, report):

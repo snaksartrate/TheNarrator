@@ -31,9 +31,16 @@ class StoryDataset(Dataset):
     def __init__(self, token_ids, block_size):
         if torch is None:
             raise ImportError("PyTorch is required for StoryDataset")
+
+        if not isinstance(block_size, int) or block_size <= 0:
+            raise ValueError("block_size must be a positive integer")
+
+        if len(token_ids) < 2:
+            raise ValueError("At least two token IDs are required")
+
         self.ids = torch.tensor(token_ids, dtype=torch.long)
         self.block_size = block_size
-
+        
     def __len__(self):
         return max((len(self.ids) - 1) // self.block_size, 0)
 

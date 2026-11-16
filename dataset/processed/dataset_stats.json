@@ -36,6 +36,6 @@
       "unique_characters": 73
     }
   },
-  "train_word_vocab_size": 11971,
+  "train_word_vocab_size": 39790,
   "train_character_vocab_size": 80
 }

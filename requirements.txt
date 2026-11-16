@@ -1,0 +1,31 @@
+
+# ==========================================
+# TheNarrator - Project Dependencies
+# ==========================================
+
+# 1. Core Machine Learning
+torch
+
+# 2. Dataset Collection and Loading
+datasets
+
+# 3. Data Processing and Numerical Operations
+numpy
+pandas
+
+# 4. Visualization and Comparative Analysis
+matplotlib
+
+# 5. Evaluation Metrics
+scikit-learn
+nltk
+textstat
+
+# 6. Progress Monitoring
+tqdm
+
+# 7. Configuration Management
+pyyaml
+
+# 8. Testing
+pytest
