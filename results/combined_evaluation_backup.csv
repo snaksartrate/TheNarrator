@@ -1,0 +1,6 @@
+timestamp,model_id,model_name,architecture,tokenizer,objective,prompt_id,prompt,generated_story,generation_time_seconds,perplexity,word_count,distinct_1,distinct_2,repetition_rate,lexical_diversity
+2026-11-17T03:01:31.941734,TEST01,sample_model,GRU,BPE,MLE,P01,A boy discovers a mysterious forest.,"A young boy was walking through a forest.
+He discovered a mysterious glowing stone.
+He picked it up and suddenly heard a voice.
+The stone showed him a magical path.",,,30,0.8,1.0,0.0,0.8
+2026-11-17T03:04:46.521035,TEST01,Dummy Model,GRU,BPE,MLE,P01,A boy discovers a mysterious forest.,A young boy was walking through a forest. He discovered a mysterious glowing stone. He picked it up and suddenly heard a voice. The stone showed him a magical path.,30,0.8,1.0,0.0,0.8,2.0001141000029747,0.06667047000009915,14.999144298795445,

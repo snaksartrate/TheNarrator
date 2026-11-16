@@ -1,0 +1,2 @@
+model_name,word_count,distinct_1,distinct_2,repetition_rate,lexical_diversity
+sample_model,32,0.8125,0.967741935483871,0.0,0.8125

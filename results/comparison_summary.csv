@@ -1,0 +1,2 @@
+model_name,number_of_stories,avg_word_count,avg_distinct_1,avg_distinct_2,avg_repetition_rate,avg_lexical_diversity
+sample_model,1,32.0,0.8125,0.9677,0.0,0.8125
