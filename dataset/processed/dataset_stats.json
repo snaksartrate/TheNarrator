@@ -1,0 +1,41 @@
+{
+  "seed": 42,
+  "source": "roneneldan/TinyStories (first stories of the train split)",
+  "story_separator": "<|endofstory|>",
+  "cleaning_report": {
+    "raw": 30000,
+    "removed_empty": 0,
+    "removed_too_short": 0,
+    "removed_contains_separator": 0,
+    "removed_duplicates": 0,
+    "final": 30000
+  },
+  "splits": {
+    "train": {
+      "num_stories": 24000,
+      "num_characters": 21325769,
+      "num_words": 4176126,
+      "avg_words_per_story": 174.0,
+      "avg_chars_per_story": 888.6,
+      "unique_characters": 80
+    },
+    "validation": {
+      "num_stories": 3000,
+      "num_characters": 2662157,
+      "num_words": 521742,
+      "avg_words_per_story": 173.9,
+      "avg_chars_per_story": 887.4,
+      "unique_characters": 70
+    },
+    "test": {
+      "num_stories": 3000,
+      "num_characters": 2661219,
+      "num_words": 521313,
+      "avg_words_per_story": 173.8,
+      "avg_chars_per_story": 887.1,
+      "unique_characters": 73
+    }
+  },
+  "train_word_vocab_size": 11971,
+  "train_character_vocab_size": 80
+}
