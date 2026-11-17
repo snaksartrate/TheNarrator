@@ -1,0 +1,53 @@
+{
+  "adamw_char": {
+    "experiment_id": "adamw_char",
+    "tokenizer": "char",
+    "optimizer": "AdamW",
+    "checkpoint": "best.pt",
+    "checkpoint_step": 2000,
+    "vocab_size": 84,
+    "test_stories": 3000,
+    "split": "test",
+    "test_mean_cross_entropy": 1.7630468075642793,
+    "test_perplexity": 5.830173778576865,
+    "test_bits_per_token": 2.5435388861281045,
+    "test_token_count": 2661220,
+    "test_unknown_token_count": 0,
+    "test_unknown_token_rate": 0.0,
+    "caveat": "token-space perplexity; compare only within one tokenizer"
+  },
+  "adamw_word": {
+    "experiment_id": "adamw_word",
+    "tokenizer": "word",
+    "optimizer": "AdamW",
+    "checkpoint": "best.pt",
+    "checkpoint_step": 2000,
+    "vocab_size": 10920,
+    "test_stories": 3000,
+    "split": "test",
+    "test_mean_cross_entropy": 3.3480822246850015,
+    "test_perplexity": 28.448124185847636,
+    "test_bits_per_token": 4.83026162204154,
+    "test_token_count": 645880,
+    "test_unknown_token_count": 1328,
+    "test_unknown_token_rate": 0.0020561094940236575,
+    "caveat": "token-space perplexity; compare only within one tokenizer"
+  },
+  "adamw_bpe": {
+    "experiment_id": "adamw_bpe",
+    "tokenizer": "bpe",
+    "optimizer": "AdamW",
+    "checkpoint": "best.pt",
+    "checkpoint_step": 2000,
+    "vocab_size": 4000,
+    "test_stories": 3000,
+    "split": "test",
+    "test_mean_cross_entropy": 3.4186813503392406,
+    "test_perplexity": 30.5291312382386,
+    "test_bits_per_token": 4.932114630514008,
+    "test_token_count": 676890,
+    "test_unknown_token_count": 0,
+    "test_unknown_token_rate": 0.0,
+    "caveat": "token-space perplexity; compare only within one tokenizer"
+  }
+}

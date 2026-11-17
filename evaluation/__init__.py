@@ -1,0 +1,1 @@
+"""Evaluation package for TheNarrator (reads saved artifacts only; never trains)."""
