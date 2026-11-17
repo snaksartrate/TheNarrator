@@ -40,14 +40,45 @@ def _next_token(logits, gen, rng):
     return int(torch.multinomial(probs, 1, generator=rng))
 
 
+def prepare_prompt_ids(tokenizer, prompt, block_size):
+    """Return (ids, info): [BOS] + encoded prompt, no EOS.
+
+    Policy for long prompts: keep BOS (if the tokenizer has one) and the NEWEST
+    tokens that fit in block_size; the oldest prompt tokens are dropped.
+    """
+    if not isinstance(prompt, str) or not prompt.strip():
+        raise ValueError("Prompt is empty. Enter a non-empty story opening.")
+    body = tokenizer.encode(prompt, add_special_tokens=False)
+    try:
+        body = [int(i) for i in body]
+    except (TypeError, ValueError):
+        raise ValueError("Tokenizer returned malformed output (expected a list of integer ids)")
+    vocab = getattr(tokenizer, "vocab_size", None)
+    if vocab is not None and any(i < 0 or i >= vocab for i in body):
+        raise ValueError("Tokenizer returned token ids outside its vocabulary")
+    unk = getattr(tokenizer, "unk_id", None)
+    if not any(i != unk for i in body):
+        raise ValueError("Prompt has no usable tokens for this tokenizer (empty or all <unk>)")
+    bos = getattr(tokenizer, "bos_id", None)
+    prefix = [] if bos is None else [bos]
+    keep = block_size - len(prefix)
+    original = len(body)
+    if original > keep:
+        body = body[-keep:]
+    info = {"prompt_tokens_original": original, "prompt_tokens_used": len(body),
+            "truncated": original > len(body), "bos_prepended": bool(prefix)}
+    return prefix + body, info
+
+
 @torch.no_grad()
-def generate_ids(model, tokenizer, gen, device="cpu"):
-    """Start at BOS, stop at EOS or max_new_tokens. Returns ids without BOS/EOS."""
+def _sample(model, tokenizer, gen, device, ids):
+    """Autoregressive loop from the context `ids`. Returns ONLY the new ids."""
     gen.validate(model.cfg.vocab_size)
     model.eval()
     rng = torch.Generator(device=device)
     rng.manual_seed(gen.seed)
-    ids = [tokenizer.bos_id]
+    ids = list(ids)
+    start = len(ids)
     for _ in range(gen.max_new_tokens):
         ctx = torch.tensor([ids[-model.cfg.block_size:]], dtype=torch.long, device=device)
         logits = model(ctx)[0][:, -1, :]          # crop to block_size, last position
@@ -55,15 +86,43 @@ def generate_ids(model, tokenizer, gen, device="cpu"):
         if nxt == tokenizer.eos_id:
             break
         ids.append(nxt)
-    return ids[1:]
+    return ids[start:]
 
 
-def generate_story(model, tokenizer, gen, device="cpu"):
-    """Returns (text, num_tokens, seconds)."""
+@torch.no_grad()
+def generate_ids(model, tokenizer, gen, device="cpu", prompt=None):
+    """prompt=None: start at BOS (original behaviour). Otherwise start from the
+    prompt. Stops at EOS or max_new_tokens. Returns new ids only (no BOS/EOS/prompt)."""
+    if prompt is None:
+        ids = [tokenizer.bos_id]
+    else:
+        ids, _ = prepare_prompt_ids(tokenizer, prompt, model.cfg.block_size)
+    return _sample(model, tokenizer, gen, device, ids)
+
+
+def generate_story(model, tokenizer, gen, device="cpu", prompt=None):
+    """Returns (text, num_tokens, seconds). Text is the continuation only."""
     t0 = time.perf_counter()
-    ids = generate_ids(model, tokenizer, gen, device)
+    ids = generate_ids(model, tokenizer, gen, device, prompt)
     text = tokenizer.decode(ids)
     return text, len(ids), time.perf_counter() - t0
+
+
+def generate_continuation(model, tokenizer, gen, prompt, device="cpu"):
+    """Prompt-conditioned generation with details for the comparison report.
+
+    generation_seconds = sampling loop only; total_seconds = prompt encoding +
+    sampling + decoding. Model loading is NOT included.
+    """
+    t0 = time.perf_counter()
+    ids, info = prepare_prompt_ids(tokenizer, prompt, model.cfg.block_size)
+    t1 = time.perf_counter()
+    new = _sample(model, tokenizer, gen, device, ids)
+    t2 = time.perf_counter()
+    text = tokenizer.decode(new)
+    t3 = time.perf_counter()
+    return {"text": text, "num_tokens": len(new), "generation_seconds": t2 - t1,
+            "total_seconds": t3 - t0, **info}
 
 
 def load_run(run_dir, checkpoint="best.pt", device="cpu"):

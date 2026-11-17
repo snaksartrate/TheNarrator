@@ -5,6 +5,7 @@ TOKENIZER_DIR = "tokenizers/saved"            # relative to repo root
 TOKENIZER_FILES = {n: f"{TOKENIZER_DIR}/{n}_tokenizer.json" for n in ("char", "word", "bpe")}
 OUTPUT_DIR = ROOT / "experiments" / "outputs"
 SMOKE_DIR = ROOT / "experiments" / "smoke_outputs"   # smoke tests never go in OUTPUT_DIR
+PROMPT_DIR = ROOT / "experiments" / "prompt_comparisons"   # prompt demo runs: run_00001 ... run_99999
 
 # Six experiments: id -> (optimizer, tokenizer). Do not add rows.
 EXPERIMENTS = {f"{o}_{t}": (o, t) for o in ("adamw", "sgd") for t in ("char", "word", "bpe")}

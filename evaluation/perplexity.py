@@ -81,6 +81,10 @@ def evaluate_checkpoint(run_dir, checkpoint="best.pt", device="cpu", batch_size=
     from src.generator import load_run
 
     run_dir = Path(run_dir)
+    import json
+    mp = run_dir / "run_meta.json"
+    if mp.exists() and json.loads(mp.read_text(encoding="utf-8")).get("smoke_test"):
+        raise ValueError(f"{run_dir.name}: smoke-test run, excluded from results")
     model, tok, ckpt = load_run(run_dir, checkpoint, device)
     eid = ckpt["experiment_id"]
     if eid != run_dir.name or eid not in config.EXPERIMENTS:
@@ -95,5 +99,6 @@ def evaluate_checkpoint(run_dir, checkpoint="best.pt", device="cpu", batch_size=
     return {"experiment_id": eid, "tokenizer": ckpt["tokenizer"]["name"],
             "optimizer": ckpt["optimizer_settings"]["name"], "checkpoint": checkpoint,
             "checkpoint_step": ckpt["step"], "vocab_size": tok.vocab_size,
-            "test_stories": len(stories), "split": "test", **summarize(res),
+            "test_stories": len(stories), "split": "test", "torch_version": torch.__version__,
+            **summarize(res),
             "caveat": "token-space perplexity; compare only within one tokenizer"}

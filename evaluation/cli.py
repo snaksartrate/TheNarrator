@@ -21,7 +21,8 @@ from .schemas import EXPERIMENT_IDS, RESULTS_DIR, VIS_DIR
 def main():
     p = argparse.ArgumentParser(prog="evaluation")
     p.add_argument("cmd", choices=["stories", "perplexity", "human-sheet", "human-summary",
-                                   "compare", "plots"])
+                                   "compare", "plots", "analysis"])
+    p.add_argument("--force", action="store_true", help="human-sheet: overwrite key / allow missing runs")
     p.add_argument("--exp", choices=EXPERIMENT_IDS)
     p.add_argument("--outputs", default=str(config.OUTPUT_DIR))
     p.add_argument("--results", default=str(RESULTS_DIR))
@@ -52,12 +53,15 @@ def main():
             except Exception as e:
                 print(f"{eid}: FAILED: {e}")
                 continue
-            data[eid] = r
-            path.write_text(json.dumps(data, indent=2), encoding="utf-8")   # save after each run
+            if a.max_stories:
+                print(f"{eid}: DEBUG run on {a.max_stories} stories, NOT saved")
+            else:
+                data[eid] = r
+                path.write_text(json.dumps(data, indent=2), encoding="utf-8")   # save after each run
             print(eid, f"CE={r['test_mean_cross_entropy']:.4f} PPL={r['test_perplexity']:.2f} "
                        f"tokens={r['test_token_count']} unk={r['test_unknown_token_rate']:.4f}")
     elif a.cmd == "human-sheet":
-        print(human.make_blind_sheet(a.outputs, res), "stories in blind sheet")
+        print(human.make_blind_sheet(a.outputs, res, force=a.force), "stories in blind sheet")
     elif a.cmd == "human-summary":
         print(human.run_human_summary(a.ratings, res / "blind_key.csv", res).to_string(index=False))
     elif a.cmd == "compare":
@@ -75,3 +79,6 @@ def main():
             for x in (o if isinstance(o, list) else [o]):
                 if x:
                     print("saved", x)
+    elif a.cmd == "analysis":
+        from .analysis import build_analysis
+        print(build_analysis(res))

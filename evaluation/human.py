@@ -9,14 +9,24 @@ import pandas as pd
 from .schemas import CRITERIA, EXPERIMENT_IDS, HUMAN_RAW_COLUMNS, RESULTS_DIR
 
 
-def make_blind_sheet(outputs_dir, out_dir=RESULTS_DIR, seed=42):
+def make_blind_sheet(outputs_dir, out_dir=RESULTS_DIR, seed=42, force=False):
     """Shuffle every saved story, give blind ids. Raters get blind_stories.csv only;
-    blind_key.csv (id -> experiment) stays with the organiser until scoring ends."""
-    items = []
+    blind_key.csv (id -> experiment) stays with the organiser until scoring ends.
+    Refuses to overwrite an existing key, or to run with missing models, unless force=True."""
+    items, missing = [], []
     for eid in EXPERIMENT_IDS:
         gdir = Path(outputs_dir) / eid / "generations"
-        for f in sorted(gdir.glob("story_*.txt")) if gdir.exists() else []:
+        files = sorted(gdir.glob("story_*.txt")) if gdir.exists() else []
+        if not files:
+            missing.append(eid)
+        for f in files:
             items.append((eid, f.stem, f.read_text(encoding="utf-8")))
+    if not force:
+        if (Path(out_dir) / "blind_key.csv").exists():
+            raise FileExistsError("blind_key.csv exists; regenerating changes blind ids. "
+                                  "Use --force only if no ratings were collected.")
+        if missing:
+            raise ValueError(f"no stories for {missing}; wait for all six or use --force")
     random.Random(seed).shuffle(items)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)

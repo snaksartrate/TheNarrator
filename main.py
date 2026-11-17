@@ -8,6 +8,7 @@ Optional overrides (apply to every run): --max-steps N --batch-size N --eval-eve
 """
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import config
@@ -75,8 +76,48 @@ def run_experiment(exp_id, settings, resume=False, cache=None):
             "sec_per_100_steps": meta["seconds_per_100_steps"], "stories": n_gen}
 
 
+def generation_main(a, p, prompt):
+    """Prompt-conditioned comparison. Never trains. Always exits."""
+    conflicts = [n for n, v in (("--smoke", a.smoke), ("--all", a.all), ("--resume", a.resume),
+                                ("--max-steps", a.max_steps), ("--batch-size", a.batch_size),
+                                ("--eval-every", a.eval_every)) if v]
+    if conflicts:
+        p.error(f"prompt generation cannot be combined with training options: {', '.join(conflicts)}")
+    if not prompt.strip():
+        p.error("the prompt is empty. Give a non-empty story opening.")
+    over = {k: v for k, v in dict(max_new_tokens=a.max_new_tokens, temperature=a.temperature,
+                                  top_k=a.top_k, seed=a.seed).items() if v is not None}
+    gen = GenConfig(**{**config.GEN, **over})
+    try:
+        gen.validate(10 ** 9)
+    except ValueError as e:
+        p.error(str(e))
+    from src.prompt_comparison import NoCheckpointsError, RunLimitError, run_comparison
+    from src.prompt_display import render
+    try:
+        run = run_comparison(prompt, gen, experiments=[a.exp] if a.exp else None,
+                             device=a.device or config.TRAIN["device"],
+                             write_report=not a.no_report)
+    except (NoCheckpointsError, RunLimitError, ValueError, RuntimeError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        raise SystemExit(2)
+    print(render(run))
+    raise SystemExit(1 if run["status"] == "failed" else 0)
+
+
 def main():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="TheNarrator: train the six models, or continue your own story opening.",
+        epilog=('Generate (inference only, compares all six trained models):\n'
+                '  python main.py "A little girl discovered a mysterious key beneath her bed."\n'
+                '  python main.py --generate "..." [--exp ID] [--max-new-tokens N] [--temperature F]\n'
+                '                 [--top-k N] [--seed N] [--device DEVICE] [--no-report]\n'
+                'Train:\n'
+                '  python main.py --smoke | --exp ID [--resume] | --all   '
+                '[--max-steps N --batch-size N --eval-every N]'))
+    p.add_argument("prompt", nargs="?", help="story opening to continue (generation mode)")
+    p.add_argument("--generate", metavar="PROMPT", help="same as the positional prompt")
     p.add_argument("--smoke", action="store_true")
     p.add_argument("--exp", choices=list(config.EXPERIMENTS))
     p.add_argument("--all", action="store_true")
@@ -84,7 +125,26 @@ def main():
     p.add_argument("--max-steps", type=int)
     p.add_argument("--batch-size", type=int)
     p.add_argument("--eval-every", type=int)
+    g = p.add_argument_group("generation options (prompt mode only)")
+    g.add_argument("--max-new-tokens", type=int)
+    g.add_argument("--temperature", type=float)
+    g.add_argument("--top-k", type=int)
+    g.add_argument("--seed", type=int)
+    g.add_argument("--device")
+    g.add_argument("--no-report", action="store_true",
+                   help="skip the Markdown report and CSV (prompt, stories, JSON are still saved)")
     a = p.parse_args()
+
+    if a.prompt is not None and a.generate is not None:
+        p.error("give the prompt either positionally or with --generate, not both")
+    prompt = a.generate if a.generate is not None else a.prompt
+    if prompt is not None:
+        generation_main(a, p, prompt)
+    used = [n for n, v in (("--max-new-tokens", a.max_new_tokens), ("--temperature", a.temperature),
+                           ("--top-k", a.top_k), ("--seed", a.seed), ("--device", a.device),
+                           ("--no-report", a.no_report)) if v not in (None, False)]
+    if used:
+        p.error(f"{', '.join(used)} only apply to prompt generation")
 
     if a.exp:
         ids = [a.exp]

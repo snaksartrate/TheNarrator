@@ -143,7 +143,9 @@ def test_human_validation_rejects(bad):
 def test_human_pipeline(tmp_path):
     out = tmp_path / "o"
     make_run(out)
-    assert human.make_blind_sheet(out, tmp_path / "r") == 2
+    assert human.make_blind_sheet(out, tmp_path / "r", force=True) == 2
+    with pytest.raises(FileExistsError):
+        human.make_blind_sheet(out, tmp_path / "r")
     key = tmp_path / "r" / "blind_key.csv"
     import pandas as pd
     ids = pd.read_csv(key)["blind_story_id"].tolist()
@@ -166,3 +168,35 @@ def test_comparison_always_six_rows(tmp_path):
     assert df["experiment_id"].tolist() == EXPERIMENT_IDS
     assert df.loc[0, "n_stories"] == 2 and df.loc[5, "training_status"] == "pending"
     assert math.isnan(df.loc[5, "mean_word_count"])           # missing is NaN, not 0
+
+# ---------- plots / analysis / comparison with all data ----------
+def test_plots_handle_empty_and_partial(tmp_path):
+    import pandas as pd
+    from evaluation import visualization as v
+    assert v.plot_human(None, tmp_path) is None
+    assert v.plot_perplexity(pd.DataFrame(), tmp_path) is None
+    assert all(x is None for x in v.plot_story_metrics(pd.DataFrame(), tmp_path))
+    make_run(tmp_path / "o")
+    rows, _ = runner.evaluate_stories(tmp_path / "o", tmp_path / "r")
+    df = pd.DataFrame(rows)
+    assert (tmp_path / "plots" / "word_count.png").parent.exists() is False   # dir created lazily
+    assert v.plot_story_metrics(df, tmp_path / "plots")[0].exists()           # one experiment only
+
+
+def test_comparison_with_perplexity_and_spread(tmp_path):
+    make_run(tmp_path / "o")
+    runner.evaluate_stories(tmp_path / "o", tmp_path / "r")
+    (tmp_path / "r" / "perplexity.json").write_text(json.dumps(
+        {"adamw_char": {"test_mean_cross_entropy": 1.0, "test_perplexity": math.e,
+                        "test_bits_per_token": 1.44, "test_unknown_token_rate": 0.0}}))
+    df = build_comparison(tmp_path / "o", tmp_path / "r")
+    assert df.loc[0, "test_perplexity"] == pytest.approx(math.e)
+    assert "perplexity" not in df.loc[0, "missing"] and "perplexity" in df.loc[1, "missing"]
+    assert df.loc[0, "max_word_count"] == 6 and df.loc[0, "min_word_count"] == 3
+
+def test_analysis_tables_run_on_partial_data(tmp_path):
+    from evaluation.analysis import build_analysis
+    make_run(tmp_path / "o")
+    runner.evaluate_stories(tmp_path / "o", tmp_path / "r")
+    build_comparison(tmp_path / "o", tmp_path / "r")
+    assert "Within char" in build_analysis(tmp_path / "r")

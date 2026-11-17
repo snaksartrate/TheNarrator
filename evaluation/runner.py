@@ -45,8 +45,7 @@ def collect_run(run_dir, experiment_id):
         if not f.exists():
             raise ArtifactError(f"{experiment_id}: story file missing: {f}")
         text = f.read_text(encoding="utf-8")
-        if not text.strip():
-            raise ArtifactError(f"{experiment_id}: empty story file: {f}")
+        # a blank story is a real (degenerate) model output: keep it, metrics will be 0 words
         m = story_metrics(text)
         secs = s.get("seconds")
         wc = m["word_count"]

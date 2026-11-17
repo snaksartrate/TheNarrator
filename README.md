@@ -488,6 +488,34 @@ Prepare the formal project report containing:
 
 The project is currently in its initial implementation and organization phase. The experimental design is established, but actual training and evaluation results are not yet available.
 
+## 12b. Prompt-Based Story Continuation (inference only)
+
+Type your own story opening and compare how the six trained Transformers continue it. This
+adds no training, no new model, optimizer, tokenizer or experiment. Each model uses its own
+checkpoint (`best.pt`) and the tokenizer saved with it.
+
+```bash
+python main.py "A little girl discovered a mysterious key beneath her bed."
+python main.py --generate "The old clock stopped at exactly midnight."
+```
+
+Optional: `--exp ID` (one model only), `--max-new-tokens N`, `--temperature F`, `--top-k N`,
+`--seed N`, `--device DEVICE`, `--no-report`. Defaults match the research settings (300 new
+tokens, temperature 0.8, top-k 40, sampling, seed 42), applied identically to all six models.
+Equal seeds do not give equivalent samples across different tokenizers.
+
+Output is a 3-column (character, word, BPE) by 2-row (AdamW, SGD + momentum) layout; narrow
+terminals fall back to stacked panels. The prompt is context, not part of the new-token
+budget; prompts longer than the 256-token window keep BOS and the newest tokens. A missing or
+corrupt checkpoint marks only that model as unavailable/failed; the others still run.
+
+Every invocation is saved in `experiments/prompt_comparisons/run_00001/` (then `run_00002`, ...
+up to `run_99999`; IDs are never reused, never wrap, never overwrite). Each run holds the exact
+prompt, one text file per model, JSON, CSV, a Markdown report and metadata. These runs are
+illustrative demonstrations, kept separate from `experiments/outputs/` and the official
+`experiments/analysis/` evaluation. They are not statistical evidence and are not mixed into the
+official generated stories or human ratings.
+
 ## 13. Final Expected Outcome
 
 By the end of the project, we aim to deliver:
